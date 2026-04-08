@@ -1,0 +1,19 @@
+name: job-offer-decoder
+version: "1.0.0"
+description: >
+  An RL environment that trains AI agents to decode Indian 
+  job offer letters through 3-step multi-turn interaction.
+  Detects 9 types of employment traps including bond clauses,
+  IP ownership traps, garden leave, and arbitration traps.
+tasks:
+  - easy
+  - medium
+  - hard
+difficulty_levels:
+  - easy
+  - medium
+  - hard
+reward_range: [0.0, 1.0]
+action_space: text
+observation_space: text
+max_steps: 3

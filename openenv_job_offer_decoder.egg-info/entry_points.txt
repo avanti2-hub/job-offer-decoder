@@ -1,0 +1,2 @@
+[console_scripts]
+server = job_offer_decoder.server.app:main

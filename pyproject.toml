@@ -1,0 +1,20 @@
+[project]
+name = "job-offer-decoder"
+version = "1.0.0"
+description = "RL environment for decoding job offer letters"
+requires-python = ">=3.10"
+dependencies = [
+    "openenv-core",
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "openai",
+    "python-multipart",
+]
+
+[project.scripts]
+server = "server.app:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
