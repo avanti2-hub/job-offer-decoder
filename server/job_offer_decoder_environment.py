@@ -1556,6 +1556,10 @@ def grade_step1_identification(
 
     score = traps_found / len(traps)
 
+# ensure minimum score > 0
+    if score == 0:
+        score = 0.05
+
     # avoid returning 1.0 exactly
     if score == 1.0:
         score = 0.95
@@ -1661,6 +1665,10 @@ def grade_step2_financial_impact(
 
     score = checks_passed / checks_done
 
+    # ensure score never becomes 0
+    if score == 0:
+        score = 0.05
+
     # Bonus for mentioning total cumulative impact
     total_words = [
         "total loss", "cumulative", "overall impact",
@@ -1727,8 +1735,12 @@ def grade_step3_recommendation(
            "unenforceable" in analysis_lower or \
            "indian contract act" in analysis_lower:
             score = min(1.0, score + 0.1)
+    if score == 0:
+        score = 0.05
 
     return normalize_score(min(score, 1.0))
+
+    
 
 
 # ============================================================
