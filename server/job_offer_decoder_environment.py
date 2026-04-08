@@ -3,6 +3,18 @@ import re
 from openenv.core.env_server import Environment, Action, Observation, State
 from models import JobOfferAction, JobOfferObservation, JobOfferState
 
+
+
+def normalize_score(score: float) -> float:
+    """
+    Ensures score is strictly between (0,1)
+    required by OpenEnv validator
+    """
+    if score <= 0:
+        return 0.01
+    if score >= 1:
+        return 0.99
+    return round(score, 2) 
 # ============================================================
 # EASY TASKS
 # Single trap per letter but written in dense legal language
@@ -1431,113 +1443,124 @@ def grade_step1_identification(
     analysis: str, task_data: dict, difficulty: str
 ) -> float:
     """Grade how well AI identified all suspicious clauses"""
-    score = 0.0
+
     analysis_lower = analysis.lower()
     traps = task_data.get("traps", [])
 
+    # Case when there are NO traps in the offer
     if not traps:
-        # No trap letter — AI should say it's clean
-        clean_words = [
-            "no bond", "clean", "safe", "no suspicious",
-            "standard", "fair", "no concerning",
-            "no minimum service", "no retention"
-        ]
-        if any(w in analysis_lower for w in clean_words):
-            return 1.0
-        return 0.3
 
-    # Check how many traps AI identified
-    trap_keywords = {
-        "training_bond": [
-            "bond", "covenant", "minimum service",
-            "liquidated damages", "training recovery",
-            "service commitment", "tenure obligation"
-        ],
-        "probation_salary_cut": [
-            "probation", "70%", "75%", "80%",
-            "reduced salary", "percent of ctc",
-            "less during probation"
-        ],
-        "clawback_bonus": [
-            "clawback", "claw back", "refund bonus",
-            "recover bonus", "joining bonus", "repay bonus",
-            "18%", "interest", "24%"
-        ],
-        "ip_ownership": [
-            "intellectual property", "ip clause", "work product",
-            "outside hours", "personal project",
-            "post employment", "12 months after"
-        ],
-        "garden_leave": [
-            "garden leave", "stay home", "cannot join",
-            "90 days", "notice period"
-        ],
-        "non_compete": [
-            "non-compete", "non compete",
-            "cannot join competitor", "competing firm",
-            "post employment restriction"
-        ],
-        "arbitration_trap": [
-            "arbitration", "delhi", "new delhi",
-            "company appoints", "dispute resolution",
-            "jurisdiction", "far from"
-        ],
-        "salary_review_illusion": [
-            "if any", "no guarantee", "increment not guaranteed",
-            "discretion", "zero increment possible"
-        ],
-        "fake_increment": [
-            "basic salary only", "not on ctc",
-            "increment on basic", "base only"
-        ],
-        "variable_pay_trap": [
-            "variable", "conditional", "not guaranteed",
-            "conditions", "performance linked"
-        ],
-        "inflated_ctc": [
-            "inflated", "misleading ctc", "not take home",
-            "actual salary", "real salary", "deceptive"
-        ],
-        "moonlighting_ban": [
-            "moonlight", "outside work", "freelance ban",
-            "no outside employment"
-        ],
-        "six_day_week": [
-            "saturday", "6 day", "six day",
-            "monday to saturday", "60 hours", "66 hours"
-        ],
-        "long_notice": [
-            "90 day notice", "notice period",
-            "above market", "industry standard"
-        ],
-        "forced_relocation": [
-            "transfer", "relocate", "relocation",
-            "any location", "refusal termination"
-        ],
-        "esop_trap": [
-            "esop", "stock option", "vesting",
-            "repurchase", "par value", "cliff"
-        ],
-        "performance_bonus_illusion": [
-            "bonus not guaranteed", "discretionary bonus",
-            "performance bonus"
+        clean_words = [
+            "no bond",
+            "clean",
+            "safe",
+            "no suspicious",
+            "standard",
+            "fair",
+            "no concerning",
+            "no minimum service",
+            "no retention"
         ]
+
+        if any(w in analysis_lower for w in clean_words):
+            return normalize_score(0.95)
+
+        return normalize_score(0.35)
+
+    # keywords for each trap
+    trap_keywords = {
+
+        "training_bond":[
+            "bond","minimum service",
+            "liquidated damages",
+            "training recovery"
+        ],
+
+        "probation_salary_cut":[
+            "probation",
+            "70%","75%","80%",
+            "reduced salary"
+        ],
+
+        "clawback_bonus":[
+            "clawback",
+            "refund bonus",
+            "repay bonus",
+            "interest"
+        ],
+
+        "ip_ownership":[
+            "intellectual property",
+            "work product",
+            "outside hours"
+        ],
+
+        "garden_leave":[
+            "garden leave"
+        ],
+
+        "non_compete":[
+            "non compete",
+            "cannot join competitor"
+        ],
+
+        "arbitration_trap":[
+            "arbitration",
+            "jurisdiction"
+        ],
+
+        "inflated_ctc":[
+            "inflated",
+            "misleading ctc"
+        ],
+
+        "variable_pay_trap":[
+            "variable",
+            "not guaranteed"
+        ],
+
+        "moonlighting_ban":[
+            "moonlighting",
+            "outside work"
+        ],
+
+        "six_day_week":[
+            "6 day",
+            "saturday"
+        ],
+
+        "long_notice":[
+            "90 day notice"
+        ],
+
+        "forced_relocation":[
+            "transfer",
+            "relocate"
+        ],
+
+        "esop_trap":[
+            "esop",
+            "vesting"
+        ]
+
     }
 
     traps_found = 0
+
     for trap in traps:
+
         keywords = trap_keywords.get(trap, [])
-        if any(kw in analysis_lower for kw in keywords):
+
+        if any(k in analysis_lower for k in keywords):
             traps_found += 1
 
-    identification_rate = traps_found / len(traps)
-    score = identification_rate
+    score = traps_found / len(traps)
 
-    # Bonus for finding ALL traps
-    if identification_rate == 1.0:
-        score = min(1.0, score + 0.1)
+    # avoid returning 1.0 exactly
+    if score == 1.0:
+        score = 0.95
 
-    return round(min(score, 1.0), 2)
+    return normalize_score(score)
 
 
 def grade_step2_financial_impact(
@@ -1633,8 +1656,8 @@ def grade_step2_financial_impact(
             "cannot", "locked", "trapped"
         ]
         if any(w in analysis_lower for w in impact_words):
-            return 0.7
-        return 0.4
+            return normalize_score(0.7)
+        return normalize_score(0.4)
 
     score = checks_passed / checks_done
 
@@ -1646,7 +1669,7 @@ def grade_step2_financial_impact(
     if any(w in analysis_lower for w in total_words):
         score = min(1.0, score + 0.1)
 
-    return round(min(score, 1.0), 2)
+    return normalize_score(min(score, 1.0))
 
 
 def grade_step3_recommendation(
@@ -1705,7 +1728,7 @@ def grade_step3_recommendation(
            "indian contract act" in analysis_lower:
             score = min(1.0, score + 0.1)
 
-    return round(min(score, 1.0), 2)
+    return normalize_score(min(score, 1.0))
 
 
 # ============================================================
@@ -1860,11 +1883,10 @@ class JobOfferDecoderEnvironment(Environment):
 
             # Final score = weighted average
             # Step 1: 30%, Step 2: 35%, Step 3: 35%
-            final_reward = round(
+            final_reward = normalize_score(
                 self._step_scores[0] * 0.30 +
                 self._step_scores[1] * 0.35 +
-                score3 * 0.35,
-                2
+                score3 * 0.35
             )
 
             return JobOfferObservation(
