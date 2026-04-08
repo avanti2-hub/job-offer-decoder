@@ -28,7 +28,7 @@ MODEL_NAME = os.environ.get(
 )
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
 
-# ── OpenAI client (required by hackathon) ───────────
+
 client = OpenAI(
     base_url=API_BASE_URL,
     api_key=HF_TOKEN or "dummy-key"

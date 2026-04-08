@@ -10,7 +10,13 @@ import uvicorn
 
 app = FastAPI(title="Job Offer Decoder Environment")
 env = JobOfferDecoderEnvironment()
-
+@app.get("/")
+def home():
+    return {
+        "message": "Job Offer Decoder API is running",
+        "usage": "Send POST request to /inference",
+        "status": "ok"
+    }
 
 @app.get("/health")
 def health():
