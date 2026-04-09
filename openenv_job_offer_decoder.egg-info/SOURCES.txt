@@ -1,0 +1,15 @@
+README.md
+pyproject.toml
+./__init__.py
+./client.py
+./inference.py
+./models.py
+openenv_job_offer_decoder.egg-info/PKG-INFO
+openenv_job_offer_decoder.egg-info/SOURCES.txt
+openenv_job_offer_decoder.egg-info/dependency_links.txt
+openenv_job_offer_decoder.egg-info/entry_points.txt
+openenv_job_offer_decoder.egg-info/requires.txt
+openenv_job_offer_decoder.egg-info/top_level.txt
+server/__init__.py
+server/app.py
+server/job_offer_decoder_environment.py

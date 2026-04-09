@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: job-offer-decoder
+Version: 1.0.0
+Summary: RL environment for decoding job offer letters
+Requires-Python: >=3.10
+Requires-Dist: openenv-core
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: pydantic
+Requires-Dist: openai

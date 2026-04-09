@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+job_offer_decoder.egg-info/PKG-INFO
+job_offer_decoder.egg-info/SOURCES.txt
+job_offer_decoder.egg-info/dependency_links.txt
+job_offer_decoder.egg-info/requires.txt
+job_offer_decoder.egg-info/top_level.txt
+server/__init__.py
+server/app.py
+server/job_offer_decoder_environment.py
