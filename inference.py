@@ -65,7 +65,6 @@ def run_episode(
     benchmark_name: str,
     difficulty: str
 ) -> None:
-    """Run one complete episode with [START][STEP][END] logging"""
 
     task_name = f"job_offer_decoder_{difficulty}"
     print(
@@ -74,7 +73,6 @@ def run_episode(
         f"model={MODEL_NAME}"
     )
 
-    # Force specific difficulty
     env._next_difficulty = difficulty
     obs = env.reset()
 
@@ -82,26 +80,29 @@ def run_episode(
     rewards = []
     success = False
 
+    def clamp(score):
+        """Ensure score is strictly between 0 and 1"""
+        if score is None or score <= 0.0:
+            return 0.01
+        if score >= 1.0:
+            return 0.99
+        return round(score, 2)
+
     try:
         while not obs.done:
-            # Build context for LLM
             context = obs.offer_text if obs.offer_text \
                 else "Continue analysis from previous steps."
 
-            # Get LLM analysis
             analysis = ask_llm(context, obs.instructions)
 
-            # Create action
             action = JobOfferAction(
                 analysis=analysis,
                 task_type=obs.task_type
             )
 
-            # Step environment
             obs = env.step(action)
 
-            reward = obs.reward \
-                if obs.reward is not None else 0.0
+            reward = clamp(obs.reward)
             done_str = "true" if obs.done else "false"
 
             print(
@@ -114,32 +115,30 @@ def run_episode(
             rewards.append(f"{reward:.2f}")
             step_num += 1
 
-        # Episode complete
-        final_score = obs.reward \
-            if obs.reward is not None else 0.0
-        success = final_score > 0.0
+        final_score = clamp(obs.reward)
+        success = final_score > 0.01
 
     except Exception as e:
         error_msg = str(e).replace('\n', ' ')
         print(
             f"[STEP] step={step_num} "
             f"action=error "
-            f"reward=0.00 "
+            f"reward=0.01 "
             f"done=true "
             f"error=\"{error_msg}\""
         )
         if not rewards:
-            rewards = ["0.00"]
+            rewards = ["0.01"]
         print(
             f"[END] success=false "
             f"steps={step_num} "
-            f"score=0.00 "
+            f"score=0.01 "
             f"rewards={','.join(rewards)}"
         )
         return
 
     if not rewards:
-        rewards = ["0.00"]
+        rewards = ["0.01"]
 
     print(
         f"[END] success={str(success).lower()} "
